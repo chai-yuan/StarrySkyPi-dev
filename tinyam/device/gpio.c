@@ -1,5 +1,6 @@
 #include "gpio.h"
 #include <stddef.h>
+#include <stdio.h>
 
 void gpio_pinMode(gpio_controller_t *controller, uint8_t pin, GpioPinMode mode) {
     if (controller == NULL || pin >= 32)
@@ -10,14 +11,14 @@ void gpio_pinMode(gpio_controller_t *controller, uint8_t pin, GpioPinMode mode) 
         // 1. 设置为软件控制模式
         controller->IOCFG &= ~(1U << pin);
         // 2. 设置为输入方向
-        controller->DIR &= ~(1U << pin);
+        controller->PADDIR &= ~(1U << pin);
         break;
 
     case GPIO_MODE_OUTPUT:
         // 1. 设置为软件控制模式
         controller->IOCFG &= ~(1U << pin);
         // 2. 设置为输出方向
-        controller->DIR |= (1U << pin);
+        controller->PADDIR |= (1U << pin);
         break;
 
     case GPIO_MODE_AF0:
@@ -41,9 +42,9 @@ void gpio_digitalWrite(gpio_controller_t *controller, uint8_t pin, uint8_t value
         return;
 
     if (value == HIGH) {
-        controller->OUT |= (1U << pin);
+        controller->PADOUT |= (1U << pin);
     } else {
-        controller->OUT &= ~(1U << pin);
+        controller->PADOUT &= ~(1U << pin);
     }
 }
 
@@ -51,14 +52,14 @@ uint8_t gpio_digitalRead(gpio_controller_t *controller, uint8_t pin) {
     if (controller == NULL || pin >= 32)
         return 0;
 
-    return (controller->IN >> pin) & 0x1;
+    return (controller->PADIN >> pin) & 0x1;
 }
 
 void gpio_digitalToggle(gpio_controller_t *controller, uint8_t pin) {
     if (controller == NULL || pin >= 32)
         return;
 
-    controller->OUT ^= (1U << pin);
+    controller->PADIN ^= (1U << pin);
 }
 
 void gpio_configInterrupt(gpio_controller_t *controller, uint8_t pin, GpioIntTrigger trigger);

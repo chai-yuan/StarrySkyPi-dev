@@ -9,9 +9,9 @@
  *       'volatile'关键字是必须的，防止编译器优化掉对硬件寄存器的读写。
  */
 typedef struct {
-    volatile uint32_t DIR;      // 0x00: PAD Direction Register
-    volatile uint32_t IN;       // 0x04: PAD Data In Register
-    volatile uint32_t OUT;      // 0x08: PAD Data Out Register
+    volatile uint32_t PADDIR;   // 0x00: PAD Direction Register
+    volatile uint32_t PADIN;    // 0x04: PAD Data In Register
+    volatile uint32_t PADOUT;   // 0x08: PAD Data Out Register
     volatile uint32_t INTEN;    // 0x0C: Interrupt Enable Register
     volatile uint32_t INTTYPE0; // 0x10: Interrupt Type0 Register
     volatile uint32_t INTTYPE1; // 0x14: Interrupt Type1 Register
@@ -20,11 +20,8 @@ typedef struct {
     volatile uint32_t PINMUX;   // 0x20: Pin Mux Register
 } gpio_controller_t;
 
-#define GPIO0_BASE (0x10002000)
-#define GPIO1_BASE (0x10003000)
-
-#define GPIO0 ((gpio_controller_t *)GPIO1_BASE)
-#define GPIO1 ((gpio_controller_t *)GPIO0_BASE)
+#define GPIO0 ((gpio_controller_t *)0x10002000)
+#define GPIO1 ((gpio_controller_t *)0x10003000)
 
 #ifndef HIGH
 #define HIGH 1
@@ -55,7 +52,7 @@ typedef enum {
 
 /**
  * @brief 设置指定GPIO引脚的模式
- * @param controller 指向GPIO控制器的指针 (例如 GPIOA, GPIOB)
+ * @param controller 指向GPIO控制器的指针 (例如 GPIO0, GPIO1)
  * @param pin        引脚号 (0 to GPIO_NUM-1)
  * @param mode       引脚模式 (GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF0, GPIO_MODE_AF1)
  */

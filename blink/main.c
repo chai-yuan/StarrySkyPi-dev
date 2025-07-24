@@ -1,27 +1,20 @@
 #include "device/gpio.h"
-#include "device/spi.h"
 #include "device/timer.h"
-#include <limits.h>
-#include <stdint.h>
-#include <stdio.h>
 
 #define LED_PIN 3
 
-int main() {
-    SPI_begin(SPI_DEFAULT_CLOCK_DIVIDER);
-
+int main(void) {
     gpio_pinMode(GPIO0, LED_PIN, GPIO_MODE_OUTPUT);
 
     while (1) {
-        printf("write data\n");
-
-        for (uint8_t i = 0; i < 16; i++) {
-            SPI_transfer(i);
-        }
-
         gpio_digitalWrite(GPIO0, LED_PIN, HIGH);
+
         timer_softDelay(1000000);
+
         gpio_digitalWrite(GPIO0, LED_PIN, LOW);
+
+        timer_softDelay(1000000);
     }
+
     return 0;
 }

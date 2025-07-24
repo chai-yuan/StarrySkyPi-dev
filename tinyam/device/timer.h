@@ -3,6 +3,6 @@
 
 #include "stdint.h"
 
-void Timer_SoftDelay(uint32_t cycle);
+void timer_softDelay(uint32_t cycle);
 
 #endif

@@ -2,7 +2,7 @@
 
 CompileFlags:
   Add:
-    - -I$(AM_HOME)
+    - -I/home/charain/Project/StarrySkyPi-dev/tinyam
 
     - --target=riscv64-unknown-elf
     - -march=rv64i_zicsr

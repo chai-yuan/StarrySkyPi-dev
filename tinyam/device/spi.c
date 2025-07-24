@@ -1,36 +1,23 @@
 #include "spi.h"
 #include "gpio.h"
+#include <stddef.h>
 
-#define SPI1_BASE_ADDR (uint32_t)0x10010000
-#define SPI1_REG_STATUS_OFFSET 0
-#define SPI1_REG_CLKDIV_OFFSET 4
-#define SPI1_REG_CMD_OFFSET 8
-#define SPI1_REG_ADR_OFFSET 12
-#define SPI1_REG_LEN_OFFSET 16
-#define SPI1_REG_DUM_OFFSET 20
-#define SPI1_REG_TXFIFO_OFFSET 24
-#define SPI1_REG_RXFIFO_OFFSET 32
-#define SPI1_REG_INTCFG_OFFSET 36
-#define SPI1_REG_INTSTA_OFFSET 40
+#define SPI_STATUS_DONE      (1U << 0)  // 传输完成标志
+#define SPI_CMD_START_TX     (1U << 1)  // 启动传输/写使能
+#define SPI_CMD_CS_ENABLE    (1U << 8)  // 片选使能 (硬件自动控制)
+#define SPI_CMD_FIFO_CLEAR   (1U << 4)  // 清空FIFO命令
 
-#define SPI1_REG_STATUS *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_STATUS_OFFSET))
-#define SPI1_REG_CLKDIV *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_CLKDIV_OFFSET))
-#define SPI1_REG_CMD *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_CMD_OFFSET))
-#define SPI1_REG_ADR *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_ADR_OFFSET))
-#define SPI1_REG_LEN *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_LEN_OFFSET))
-#define SPI1_REG_DUM *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_DUM_OFFSET))
-#define SPI1_REG_TXFIFO *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_TXFIFO_OFFSET))
-#define SPI1_REG_RXFIFO *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_RXFIFO_OFFSET))
-#define SPI1_REG_INTCFG *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_INTCFG_OFFSET))
-#define SPI1_REG_INTSTA *((volatile uint32_t *)(SPI1_BASE_ADDR + SPI1_REG_INTSTA_OFFSET))
-
-#define SPI_CLOCK_DIVIDER 7 // sck = apb_clk/(div+1)
-#define SPI_STATUS_DONE 0x1
 #define SPI_POLL_MASK 0xFFFF
 
-static inline void SPI_SetDataLen(uint16_t len) { SPI1_REG_LEN = (len << 16); }
+static inline void spi_waitForTransferDone(void) {
+    while ((SPI1->STATUS & SPI_POLL_MASK) != SPI_STATUS_DONE);
+}
 
-void SPI_Init(void) {
+static inline void spi_setDataLength(uint8_t bits) {
+    SPI1->LEN = (uint32_t)bits << 16;
+}
+
+void SPI_begin(uint32_t clockDivider) {
     // GPIO复用配置：将引脚功能切换到SPI
     gpio_pinMode(GPIO1, 0, GPIO_MODE_AF0);
     gpio_pinMode(GPIO1, 1, GPIO_MODE_AF0);
@@ -38,39 +25,53 @@ void SPI_Init(void) {
     gpio_pinMode(GPIO1, 3, GPIO_MODE_AF0);
     gpio_pinMode(GPIO1, 4, GPIO_MODE_AF0);
     gpio_pinMode(GPIO1, 5, GPIO_MODE_AF0);
-
     // SPI外设配置
-    SPI1_REG_STATUS = (1 << 4); // 清空FIFO
-    SPI1_REG_STATUS = 0;
-    SPI1_REG_INTCFG = 0;                 // 清空中断配置
-    SPI1_REG_DUM    = 0;                 // 清空Dummy-Cycle
-    SPI1_REG_CLKDIV = SPI_CLOCK_DIVIDER; // 设置SPI时钟分频
+    SPI1->STATUS = SPI_CMD_FIFO_CLEAR; // 清空FIFO
+    SPI1->STATUS = 0;                  // 清除状态
+    SPI1->INTCFG = 0;                  // 禁用到所有中断
+    SPI1->DUM    = 0;                  // 无Dummy-Cycle
+    SPI1->CLKDIV = clockDivider;       // 设置SPI时钟分频
 }
 
-void SPI_Write8bit(uint8_t byte) {
-    SPI_SetDataLen(8);              // 设置发送字长
-    SPI1_REG_TXFIFO = (byte << 24); // 将数据写入发送FIFO
-    SPI1_REG_STATUS = 0x0102;       // 片选 开始写传输(单线)
-    // 轮询等待传输完成
-    while ((SPI1_REG_STATUS & SPI_POLL_MASK) != SPI_STATUS_DONE)
-        ;
+uint8_t SPI_transfer(uint8_t data) {
+    spi_setDataLength(8);
+    SPI1->TXFIFO = (uint32_t)data << 24;
+    // 启动单线写传输，并使能片选
+    SPI1->STATUS = SPI_CMD_START_TX | SPI_CMD_CS_ENABLE;
+    spi_waitForTransferDone();
+    return 0;
 }
 
-void SPI_Write16bit(uint16_t data) {
-    SPI_SetDataLen(16);             // 设置发送字长
-    SPI1_REG_TXFIFO = (data << 16); // 将数据写入发送FIFO
-    SPI1_REG_STATUS = 0x0102;       // 片选 开始写传输(单线)
-    // 轮询等待传输完成
-    while ((SPI1_REG_STATUS & SPI_POLL_MASK) != SPI_STATUS_DONE)
-        ;
+uint16_t SPI_transfer16(uint16_t data) {
+    spi_setDataLength(16);
+    SPI1->TXFIFO = (uint32_t)data << 16;
+    SPI1->STATUS = SPI_CMD_START_TX | SPI_CMD_CS_ENABLE;
+    spi_waitForTransferDone();
+    return 0;
 }
 
-void SPI_WriteBuffer(const uint8_t *data, uint16_t len) {
-    SPI_SetDataLen(8);
-    for (int i = 0; i < len; i++) {
-        SPI1_REG_TXFIFO = (data[i] << 24); // 将数据写入发送FIFO
-        SPI1_REG_STATUS = 0x0102;          // 片选 开始写传输(单线)
-        while ((SPI1_REG_STATUS & SPI_POLL_MASK) != SPI_STATUS_DONE)
-            ;
+void SPI_transferBytes(uint8_t *buffer, uint16_t length) {
+    if (buffer == NULL || length == 0) {
+        return;
+    }
+    spi_setDataLength(8);
+    for (uint16_t i = 0; i < length; ++i) {
+        SPI1->TXFIFO = (uint32_t)buffer[i] << 24;
+        SPI1->STATUS = SPI_CMD_START_TX | SPI_CMD_CS_ENABLE;
+        spi_waitForTransferDone();
+        // 读取接收到的字节并覆盖原缓冲区内容
+        buffer[i] = (uint8_t)(SPI1->RXFIFO >> 24);
+    }
+}
+
+void SPI_writeBytes(const uint8_t *buffer, uint16_t length) {
+    if (buffer == NULL || length == 0) {
+        return;
+    }
+    spi_setDataLength(8);
+    for (uint16_t i = 0; i < length; ++i) {
+        SPI1->TXFIFO = (uint32_t)buffer[i] << 24;
+        SPI1->STATUS = SPI_CMD_START_TX | SPI_CMD_CS_ENABLE;
+        spi_waitForTransferDone();
     }
 }
