@@ -1,0 +1,9 @@
+*.d
+*.o
+*.img
+*.asm
+*.sym
+*.out
+*.bin
+.cache
+build/

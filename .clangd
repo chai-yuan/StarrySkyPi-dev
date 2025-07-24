@@ -1,0 +1,9 @@
+# .clangd
+
+CompileFlags:
+  Add:
+    - -I$(AM_HOME)
+
+    - --target=riscv64-unknown-elf
+    - -march=rv64i_zicsr
+    - -mabi=lp64
