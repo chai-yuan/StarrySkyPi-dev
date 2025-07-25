@@ -1,0 +1,3 @@
+[submodule "game/MicroCoreEngine"]
+	path = game/MicroCoreEngine
+	url = https://github.com/chai-yuan/MicroCoreEngine.git
