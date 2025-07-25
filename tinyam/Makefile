@@ -15,14 +15,14 @@ OBJDUMP = $(TOOLPREFIX)objdump
 
 CFLAGS += -Wall -Werror -O -fno-omit-frame-pointer -ggdb
 # CFLAGS += -march=rv32imazicsr -mabi=ilp32
-CFLAGS += -march=rv64i_zicsr -mabi=lp64
+CFLAGS += -march=rv64im_zicsr -mabi=lp64
 CFLAGS += -mcmodel=medany
 CFLAGS += -I$(AM_HOME)
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
 LDFLAGS ?= -T $(AM_HOME)/link.ld
-LDFLAGS += -z max-page-size=4096
+LDFLAGS += -z max-page-size=4096 -Map=$(BUILD_DIR)/$(PROJECT_NAME).map
 # LDFLAGS += -m elf32lriscv
 LDFLAGS += -m elf64lriscv
 
