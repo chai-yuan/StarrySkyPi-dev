@@ -5,23 +5,18 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define LED_PIN 3
 
 int main() {
     SPI_begin(SPI_DEFAULT_CLOCK_DIVIDER);
 
-    gpio_pinMode(GPIO0, LED_PIN, GPIO_MODE_OUTPUT);
-
     while (1) {
         printf("write data\n");
 
-        for (uint8_t i = 0; i < 16; i++) {
+        for (uint32_t i = 0; i < 256; i++) {
             SPI_transfer(i);
         }
 
-        gpio_digitalWrite(GPIO0, LED_PIN, HIGH);
         timer_softDelay(1000000);
-        gpio_digitalWrite(GPIO0, LED_PIN, LOW);
     }
     return 0;
 }
