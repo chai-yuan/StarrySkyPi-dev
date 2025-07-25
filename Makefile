@@ -1,5 +1,5 @@
 # Makefile
-APP_DIR        ?= game
+APP_DIR        ?= m_test
 BOOTLOADER_DIR := bootloader
 
 APP_BINARY     := $(APP_DIR)/build/$(APP_DIR).bin

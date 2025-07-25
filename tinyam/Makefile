@@ -15,7 +15,7 @@ OBJDUMP = $(TOOLPREFIX)objdump
 
 CFLAGS += -Wall -Werror -O -fno-omit-frame-pointer -ggdb
 # CFLAGS += -march=rv32imazicsr -mabi=ilp32
-CFLAGS += -march=rv64i_zicsr -mabi=lp64
+CFLAGS += -march=rv64im_zicsr -mabi=lp64
 CFLAGS += -mcmodel=medany
 CFLAGS += -I$(AM_HOME)
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
