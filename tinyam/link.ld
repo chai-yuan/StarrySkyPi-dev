@@ -4,20 +4,17 @@ ENTRY( _entry )
 MEMORY
 {
   /* 应用程序运行的 RAM 区域 */
-  RAM   (rwx) : ORIGIN = 0x0f000000, LENGTH = 1M
+  RAM   (rwx) : ORIGIN = 0x0f000000, LENGTH = 64k
   /* Bootloader 和应用程序镜像存放的 FLASH 区域 */
   FLASH (rx)  : ORIGIN = 0x30000000, LENGTH = 16M
 }
 
 SECTIONS
 {
-  /* VMA 和 LMA 都在 FLASH */
   .bootloader 0x30000000 :
   {
-    /* 确保启动代码放在最前面 */
     *(.text.entry)
-    *(.boot.text .boot.text.*)
-    *(.boot.rodata .boot.rodata.*)
+    *(.text.start)
     . = ALIGN(4);
     PROVIDE(_bootloader_end = .);
   } > FLASH AT > FLASH
@@ -26,9 +23,8 @@ SECTIONS
   /* VMA 在 RAM, LMA 在 FLASH, 紧跟在 bootloader 后面 */
   .text :
   {
-    /* 提供加载地址的起始符号，供 bootloader 使用 */
-    PROVIDE(_sidata = LOADADDR(.text));
-
+    PROVIDE(_stext_load = LOADADDR(.text));
+    PROVIDE(_stext = .);
     /* 应用程序的代码段 */
     /* 包含所有非 boot 目录下的代码 */
     *(.text .text.*)
@@ -42,7 +38,7 @@ SECTIONS
   /* 应用程序的已初始化数据段 */
   /* VMA 在 RAM, LMA 在 FLASH, 紧跟在 .text 的 LMA 后面 */
   .data : {
-    /* 提供 VMA 的起始符号 */
+    PROVIDE(_sdata_load = LOADADDR(.data));
     PROVIDE(_sdata = .);
     *(.data .data.*)
     PROVIDE(_edata = .);

@@ -1,5 +1,5 @@
 .section .text
-.globl start
+.globl _start
 .section .text.entry
 .globl _entry
 _entry:
@@ -15,7 +15,6 @@ UART_INIT:
     sb a5,3(a4)
 
     # 跳转到start
-    la sp, 0x0f010000
-    call start
+    call _start
 junk:
     j junk
