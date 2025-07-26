@@ -7,7 +7,7 @@ _start:
   jal _loader
   la sp, 0x0f010000
   mv s0, zero
-  call _stext
+  call main
 
   /* Should never reach here. Infinite loop for safety. */
 hang:

@@ -30,7 +30,7 @@ uint32_t run_workload_to_test(uint32_t iterations) {
     return result;
 }
 
-int main() {
+int main(void) {
     printf("Starting performance test...\n");
     const int NUM_TEST_RUNS = 20;
     const int WORKLOAD_ITERATIONS = 1000000;
