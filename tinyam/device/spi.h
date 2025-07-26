@@ -26,7 +26,7 @@ typedef struct {
  * @param clockDivider SPI时钟分频系数, SCK = APB_CLK / (clockDivider + 1).
  *        可以使用 SPI_DEFAULT_CLOCK_DIVIDER 作为默认值。
  */
-void SPI_begin(uint32_t clockDivider);
+void spi_begin(uint32_t clockDivider);
 
 /**
  * @brief 发送和接收一个8位字节。
@@ -34,7 +34,7 @@ void SPI_begin(uint32_t clockDivider);
  * @param data 要发送的字节。
  * @return uint8_t 从机返回的字节。
  */
-uint8_t SPI_transfer(uint8_t data);
+uint8_t spi_transfer(uint8_t data);
 
 /**
  * @brief 发送和接收一个16位字。
@@ -42,7 +42,7 @@ uint8_t SPI_transfer(uint8_t data);
  * @param data 要发送的16位数据。
  * @return uint16_t 从机返回的16位数据。
  */
-uint16_t SPI_transfer16(uint16_t data);
+uint16_t spi_transfer16(uint16_t data);
 
 /**
  * @brief 连续发送和接收一个数据缓冲区。
@@ -51,7 +51,7 @@ uint16_t SPI_transfer16(uint16_t data);
  * @param buffer 指向数据缓冲区的指针。
  * @param length 要传输的字节数。
  */
-void SPI_transferBytes(uint8_t *buffer, uint16_t length);
+void spi_transferBytes(uint8_t *buffer, uint16_t length);
 
 /**
  * @brief 仅发送一个数据缓冲区（忽略接收的数据）。
@@ -59,6 +59,6 @@ void SPI_transferBytes(uint8_t *buffer, uint16_t length);
  * @param buffer 指向要发送数据的常量指针。
  * @param length 要发送的字节数。
  */
-void SPI_writeBytes(const uint8_t *buffer, uint16_t length);
+void spi_writeBytes(const uint8_t *buffer, uint16_t length);
 
 #endif

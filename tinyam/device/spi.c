@@ -17,7 +17,7 @@ static inline void spi_setDataLength(uint8_t bits) {
     SPI1->LEN = (uint32_t)bits << 16;
 }
 
-void SPI_begin(uint32_t clockDivider) {
+void spi_begin(uint32_t clockDivider) {
     // GPIO复用配置：将引脚功能切换到SPI
     gpio_pinMode(GPIO1, 0, GPIO_MODE_AF0);
     gpio_pinMode(GPIO1, 1, GPIO_MODE_AF0);
@@ -33,7 +33,7 @@ void SPI_begin(uint32_t clockDivider) {
     SPI1->CLKDIV = clockDivider;       // 设置SPI时钟分频
 }
 
-uint8_t SPI_transfer(uint8_t data) {
+uint8_t spi_transfer(uint8_t data) {
     spi_setDataLength(8);
     SPI1->TXFIFO = (uint32_t)data << 24;
     // 启动单线写传输，并使能片选
@@ -42,7 +42,7 @@ uint8_t SPI_transfer(uint8_t data) {
     return 0;
 }
 
-uint16_t SPI_transfer16(uint16_t data) {
+uint16_t spi_transfer16(uint16_t data) {
     spi_setDataLength(16);
     SPI1->TXFIFO = (uint32_t)data << 16;
     SPI1->STATUS = SPI_CMD_START_TX | SPI_CMD_CS_ENABLE;
@@ -50,7 +50,7 @@ uint16_t SPI_transfer16(uint16_t data) {
     return 0;
 }
 
-void SPI_transferBytes(uint8_t *buffer, uint16_t length) {
+void spi_transferBytes(uint8_t *buffer, uint16_t length) {
     if (buffer == NULL || length == 0) {
         return;
     }
@@ -64,7 +64,7 @@ void SPI_transferBytes(uint8_t *buffer, uint16_t length) {
     }
 }
 
-void SPI_writeBytes(const uint8_t *buffer, uint16_t length) {
+void spi_writeBytes(const uint8_t *buffer, uint16_t length) {
     if (buffer == NULL || length == 0) {
         return;
     }
