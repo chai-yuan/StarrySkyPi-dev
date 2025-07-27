@@ -1,6 +1,8 @@
 #include "MicroCoreEngine/engine/Debug.h"
 #include "MicroCoreEngine/engine/PlatformPorting.h"
 #include "device/gpio.h"
+#include "device/timer.h"
+#include "device/spi.h"
 #include <stdio.h>
 
 typedef struct {
@@ -9,8 +11,8 @@ typedef struct {
     uint8_t *pixels;
 } InternalImage;
 
-#define DISPLAY_WIDTH 64
-#define DISPLAY_HEIGHT 48
+#define DISPLAY_WIDTH 96
+#define DISPLAY_HEIGHT 96
 static uint16_t       vmem_display[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 static InternalImage *current_render_target = NULL;
 static Rect           current_clip_rect;
@@ -140,27 +142,23 @@ static void wrapper_gfx_clear(Color color) {
 }
 
 static void wrapper_gfx_present(void) {
-    printf("\x1b[2J\x1b[H");
+    while (gpio_digitalRead(GPIO0, 27) == 0){
+        timer_softDelay(10000);
+        printf("waiting\n");
+    }
+    printf("send\n");
+
+    uint16_t len = DISPLAY_HEIGHT * DISPLAY_WIDTH * 2;
+    spi_transfer(len & 0xff);
+    spi_transfer(len >> 8);
+    timer_softDelay(10000);
 
     for (int y = 0; y < DISPLAY_HEIGHT; y++) {
         for (int x = 0; x < DISPLAY_WIDTH; x++) {
             uint16_t pixel_color = vmem_display[y][x];
-
-            // 1. 从 RGB565 解码
-            uint8_t r5 = (pixel_color >> 11) & 0x1F;
-            uint8_t g6 = (pixel_color >> 5)  & 0x3F;
-            uint8_t b5 = pixel_color & 0x1F;
-
-            // 2. 将 5/6/5 位颜色扩展到 8 位 (0-255)
-            uint8_t r8 = (r5 << 3) | (r5 >> 2);
-            uint8_t g8 = (g6 << 2) | (g6 >> 4);
-            uint8_t b8 = (b5 << 3) | (b5 >> 2);
-
-            // 3. 打印ANSI转义序列来设置背景色
-            printf("\x1b[48;2;%u;%u;%um  ", r8, g8, b8);
+            spi_transfer(pixel_color & 0xff);
+            spi_transfer(pixel_color >> 8);
         }
-        // 4. 在每行末尾重置所有颜色属性，并换行
-        printf("\x1b[0m\n");
     }
 }
 
