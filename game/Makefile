@@ -1,7 +1,7 @@
 PROJECT_NAME = game
-SRCS = main.c platform.c
+SRCS = main.c platform.c spi_utils.c
 SRCS += $(shell find MicroCoreEngine/engine -name '*.c')
-SRCS += $(shell find MicroCoreEngine/games -name '*.c')
+SRCS += $(shell find games -name '*.c')
 
 CFLAGS += -I MicroCoreEngine/engine
 
