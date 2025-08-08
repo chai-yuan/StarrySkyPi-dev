@@ -7,24 +7,21 @@ ASMS += $(shell find $(BOARD_DIR)/boot -name '*.S')
 SRCS += $(shell find $(BOARD_DIR)/libgcc -name '*.c')
 ASMS += $(shell find $(BOARD_DIR)/libgcc -name '*.S')
 
-TOOLPREFIX ?= riscv64-linux-gnu-
+TOOLPREFIX ?= riscv64-unknown-elf-
 
-export PATH := $(PATH):$(abspath $(AM_HOME)/$(BOARD)/minirv)
-CC = minirv-gcc
-AS = minirv-gcc
-CXX = minirv-g++
+CC = $(TOOLPREFIX)gcc
+AS = $(TOOLPREFIX)gcc
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS += -Wall -Werror -fno-omit-frame-pointer -ggdb
+CFLAGS += -Wall -Werror -O2 -fno-omit-frame-pointer -ggdb
 CFLAGS += -march=rv32e -mabi=ilp32e
 CFLAGS += -mcmodel=medany
 CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
-CFLAGS += -ffunction-sections -fdata-sections
 
-LDFLAGS ?= -T $(BOARD_DIR)/link.ld --gc-sections
+LDFLAGS ?= -T $(BOARD_DIR)/link.ld
 LDFLAGS += -z max-page-size=4096 -Map=$(BUILD_DIR)/$(PROJECT_NAME).map
 LDFLAGS += -m elf32lriscv
 

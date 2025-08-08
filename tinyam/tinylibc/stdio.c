@@ -48,8 +48,8 @@ static char* u_to_str_base(char* buffer_end, unsigned long long num, int base) {
         return p;
     }
     while (num > 0) {
-        *--p = digits[num % base]; // 取余数得到当前位的数字
-        num /= base;              // 整除以往前进一位
+        *--p = digits[num % base];  // 取余数得到当前位的数字
+        num /= base;                // 整除以往前进一位
     }
     return p;
 }
